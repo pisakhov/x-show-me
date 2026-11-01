@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>X Show Me: agents should show, not tell</title>
+<meta name="description" content="The same task told twice: as a chatbot and as Show Me. Tap the working examples.">
+<style>
+:root { --base: #0c1015; --panel: #151b23; --raised: #1b242e; --edge: #303c49; --text: #edf2f7; --soft: #b0bdc9; --muted: #94a3b2; --accent: #a7ddeb; --warm: #f2ab94; --ok: #93dfb3; }
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; background: var(--base); color: var(--text); font: 16px/1.5 ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+.wrap { width: min(1120px, 100%); margin: 0 auto; padding: 0 16px; }
+a { color: var(--accent); }
+a:focus-visible, button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+
+.hero { padding: 40px 0 20px; }
+.hero h1 { margin: 0; font-size: clamp(34px, 7vw, 54px); line-height: 1.1; letter-spacing: 0; }
+.hero p { margin: 8px 0 0; color: var(--soft); font-size: 18px; }
+.task { margin-top: 20px; padding: 14px 16px; border: 1px solid var(--edge); border-left: 3px solid var(--accent); border-radius: 8px; background: var(--panel); }
+.task span { display: block; color: var(--muted); font-size: 13px; }
+.task b { font-size: 18px; font-weight: 600; }
+.sample { color: var(--muted) !important; font-size: 13px !important; }
+
+.switch { display: none; position: sticky; top: 0; z-index: 2; gap: 4px; padding: 8px 0; background: var(--base); }
+.switch button { flex: 1; min-height: 44px; border: 1px solid var(--edge); border-radius: 8px; background: var(--panel); color: var(--soft); font: 600 15px ui-sans-serif, system-ui, sans-serif; cursor: pointer; }
+.switch button[aria-pressed="true"] { border-color: var(--accent); background: var(--accent); color: var(--base); }
+
+section.step { padding: 24px 0; border-top: 1px solid var(--edge); }
+section.step:first-of-type { border-top: 0; }
+.step h2 { margin: 0; font-size: 24px; line-height: 1.25; }
+.step h2 span { color: var(--muted); font-weight: 500; }
+.step > p { margin: 2px 0 12px; color: var(--soft); }
+.pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.side { display: flex; flex-direction: column; min-width: 0; height: 460px; overflow: hidden; border: 1px solid var(--edge); border-radius: 12px; background: var(--panel); }
+.side.show { border-color: var(--accent); }
+.side > header { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 36px; padding: 0 12px; border-bottom: 1px solid var(--edge); color: var(--muted); font-size: 13px; }
+.side > header b { color: var(--text); font-weight: 600; }
+.side.chat > header .cost { color: var(--warm); }
+.side.show > header .cost { color: var(--ok); }
+.talk { flex: 1; min-height: 0; padding: 12px; overflow: auto; font-size: 14px; line-height: 1.55; color: var(--soft); }
+.talk p { margin: 0 0 10px; }
+.talk .you { width: fit-content; max-width: 85%; margin-left: auto; padding: 6px 12px; border-radius: 14px; background: var(--raised); color: var(--text); }
+iframe { flex: 1; width: 100%; min-height: 0; border: 0; background: var(--base); }
+
+#draft { position: sticky; bottom: 0; z-index: 2; display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 8px 16px; border-top: 1px solid var(--edge); background: var(--raised); }
+#draft b { flex: none; color: var(--muted); font-size: 13px; font-weight: 600; }
+#draft span { min-width: 0; overflow-wrap: anywhere; }
+#draft span.empty { color: var(--muted); }
+#draft em { flex: none; margin-left: auto; color: var(--muted); font-size: 13px; font-style: normal; }
+
+.score { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 8px 0 28px; }
+.score div { padding: 16px; border: 1px solid var(--edge); border-radius: 12px; background: var(--panel); }
+.score strong { display: block; font-size: 32px; line-height: 1.2; }
+.score .bad strong { color: var(--warm); }
+.score .good strong { color: var(--ok); }
+.score span { color: var(--soft); font-size: 14px; }
+.end { padding: 0 0 32px; color: var(--soft); }
+
+@media (max-width: 859px) {
+  .switch { display: flex; }
+  .pair { grid-template-columns: minmax(0, 1fr); }
+  .side { height: 430px; }
+  body[data-view="chat"] .side.show, body[data-view="show"] .side.chat { display: none; }
+  #draft em { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+</style>
+</head>
+<body data-view="show">
+<div class="wrap">
+  <div class="hero">
+    <h1>Show Me</h1>
+    <p>Agents should show, not tell.</p>
+    <div class="task"><span>The task</span><b>“My checkout button is broken on phones. Fix it.”</b></div>
+    <p>Same task. Same agent. Two ways to talk. Tap the cards as you go.</p>
+    <p class="sample">Sample data. Fern Coffee is made up. <a href="https://github.com/pisakhov/x-show-me">Read the principles</a></p>
+  </div>
+  <div class="switch" role="group" aria-label="Choose a side">
+    <button type="button" data-view="chat" aria-pressed="false">Chatbot</button>
+    <button type="button" data-view="show" aria-pressed="true">Show Me</button>
+  </div>
+
+  <section class="step" id="point-at-it">
+    <h2><span>1.</span> Point at it</h2>
+    <p>You point. The agent doesn't quiz you.</p>
+    <div class="pair">
+      <div class="side chat"><header><b>Chatbot</b><span class="cost"></span></header><div class="talk" tabindex="0" aria-label="Chatbot version">
+        <p class="you">My checkout button is broken on phones. Fix it.</p>
+        <p>I'd be happy to help with that! To fix it, I need a little more information first.</p>
+        <p>Which button do you mean? There are several on the checkout page, including the Pay button near the bottom, the Apply coupon link next to the total, and the OK button on the cookie bar.</p>
+        <p>Could you describe where it sits on the screen, what it looks like, and what happens when you tap it? It would also help to know which phone and browser you're using, and whether this happens every time or only sometimes.</p>
+        <p>If you're able to, please share a screen recording too. The more detail you can give me, the better I can help!</p>
+      </div></div>
+      <div class="side show"><header><b>Show Me</b><span class="cost">2 taps</span></header><iframe title="Point at it example" src="examples/point-at-it.html" sandbox="allow-scripts" loading="lazy"></iframe></div>
+    </div>
+  </section>
+
+  <section class="step" id="tap-through-map">
+    <h2><span>2.</span> Tap-through map</h2>
+    <p>The whole system at a glance. The problem is already lit up.</p>
+    <div class="pair">
+      <div class="side chat"><header><b>Chatbot</b><span class="cost"></span></header><div class="talk" tabindex="0" aria-label="Chatbot version">
+        <p>Thanks! I looked into it, and here is what I found. Your checkout works in four steps.</p>
+        <p>First, the Cart step adds up the items and shipping. This step works correctly on every screen size. Next, the Address step saves where the order should go, and it also works on every screen size.</p>
+        <p>Then comes the Payment step, and this is where the problem is. On phones, the cookie bar is fixed to the bottom of the screen and its z-index puts it on top of the Pay button. Most of the button is covered, so people can't tap it.</p>
+        <p>Finally, the Receipt step confirms the order. However, phone customers never reach it, because they can't get past the Payment step.</p>
+        <p>Let me know if you'd like more detail about any of these steps, or if you'd like me to go ahead and fix it.</p>
+      </div></div>
+      <div class="side show"><header><b>Show Me</b><span class="cost">1 look, 1 tap</span></header><iframe title="Tap-through map example" src="examples/tap-through-map.html" sandbox="allow-scripts" loading="lazy"></iframe></div>
+    </div>
+  </section>
+
+  <section class="step" id="tap-to-decide">
+    <h2><span>3.</span> Tap to decide</h2>
+    <p>See each option. Tap one.</p>
+    <div class="pair">
+      <div class="side chat"><header><b>Chatbot</b><span class="cost"></span></header><div class="talk" tabindex="0" aria-label="Chatbot version">
+        <p>Great question! There are a few ways we could fix this. Here are your options:</p>
+        <p><b>Option 1: Sticky Pay button.</b> We could stick the Pay button to the bottom of the screen and rest the cookie bar just above it. The advantage is that the button is always in reach. The downside is that the bar and button together take up more of the screen.</p>
+        <p><b>Option 2: Cookie bar on top.</b> We could move the cookie bar to the top of the page. This is the smallest change. However, it can push the page content down and may cover your header.</p>
+        <p><b>Option 3: Cookie pop-up.</b> We could replace the bar with a pop-up in the middle of the screen. The Pay button stays clear afterwards, but the pop-up blocks the page until it is dismissed.</p>
+        <p>Overall, I would recommend Option 1. Let me know which one you'd prefer and I'll get started!</p>
+      </div></div>
+      <div class="side show"><header><b>Show Me</b><span class="cost">1 tap</span></header><iframe title="Tap to decide example" src="examples/tap-to-decide.html" sandbox="allow-scripts" loading="lazy"></iframe></div>
+    </div>
+  </section>
+
+  <section class="step" id="work-board">
+    <h2><span>4.</span> Work board</h2>
+    <p>Long jobs count real steps. No guessed plan.</p>
+    <div class="pair">
+      <div class="side chat"><header><b>Chatbot</b><span class="cost"></span></header><div class="talk" tabindex="0" aria-label="Chatbot version">
+        <p>I'll start by opening checkout.css to see how the Pay button is positioned.</p>
+        <p>Now let me look at cookie-banner.css to see how the bar is placed.</p>
+        <p>Next I'll search the project for z-index, because this looks like a stacking problem.</p>
+        <p>Let me check checkout.test.js to see what is already tested.</p>
+        <p>Now I'll load the page at phone size to confirm what's happening.</p>
+        <p>Okay, I can see the issue. I'll edit checkout.css first.</p>
+        <p>Now I'll update cookie-banner.css as well.</p>
+        <p>Let me run the phone tests to make sure this works.</p>
+        <p>Hmm, one test failed. It looks like a spacing problem. Let me fix that.</p>
+        <p>I've adjusted the spacing. Running the phone tests again.</p>
+        <p>The tests pass now! Let me commit the change.</p>
+        <p>Next I'll merge the pull request.</p>
+        <p>Finally, I'll deploy this to the shop.</p>
+      </div></div>
+      <div class="side show"><header><b>Show Me</b><span class="cost">1 look</span></header><iframe title="Work board example" src="examples/work-board.html" sandbox="allow-scripts" loading="lazy"></iframe></div>
+    </div>
+  </section>
+
+  <section class="step" id="drag-to-compare">
+    <h2><span>5.</span> Drag to compare</h2>
+    <p>Don't read about the change. Drag across it.</p>
+    <div class="pair">
+      <div class="side chat"><header><b>Chatbot</b><span class="cost"></span></header><div class="talk" tabindex="0" aria-label="Chatbot version">
+        <p>All done! Here is a summary of the changes I made:</p>
+        <p>In checkout.css, I changed the Pay button to stick to the bottom of the screen and made it full width, so it is now always within reach on phones.</p>
+        <p>In cookie-banner.css, I made the cookie bar shorter and moved it up so that it rests just above the Pay button instead of sitting on top of it. I also adjusted the z-index so the two no longer overlap.</p>
+        <p>Before this change, the cookie bar covered most of the Pay button. After this change, both are fully visible. The order details look the same as before, and the page layout is otherwise unchanged.</p>
+        <p>All phone tests pass. Is there anything else you'd like me to change?</p>
+      </div></div>
+      <div class="side show"><header><b>Show Me</b><span class="cost">1 drag, 1 tap</span></header><iframe title="Drag to compare example" src="examples/drag-to-compare.html" sandbox="allow-scripts" loading="lazy"></iframe></div>
+    </div>
+  </section>
+
+  <div class="score">
+    <div class="bad"><strong id="words"></strong><span>to read as a chatbot</span></div>
+    <div class="good"><strong>5 taps, 1 drag</strong><span>and 2 looks with Show Me</span></div>
+  </div>
+  <p class="end"><a href="https://github.com/pisakhov/x-show-me">Use Show Me with your agent</a></p>
+</div>
+<div id="draft" aria-live="polite"><b>Your draft</b><span class="empty" id="draft-text">Tap a card. Its answer lands here.</span><em>You still press send</em></div>
+<script>
+// Cards are sandboxed, so a tap can only reach this page as a message.
+const frames = [...document.querySelectorAll('iframe')];
+const draftText = document.getElementById('draft-text');
+addEventListener('message', event => {
+  if (!frames.some(frame => frame.contentWindow === event.source)) return;
+  if (event.data?.type !== 'x-card-reply' || typeof event.data.text !== 'string') return;
+  draftText.classList.remove('empty');
+  draftText.textContent = event.data.text.slice(0, 2000);
+});
+
+const countWords = text => text.trim().split(/\s+/).filter(Boolean).length;
+let total = 0;
+for (const side of document.querySelectorAll('.side.chat')) {
+  const replies = [...side.querySelectorAll('.talk p:not(.you)')];
+  const words = replies.reduce((sum, reply) => sum + countWords(reply.textContent), 0);
+  total += words;
+  side.querySelector('.cost').textContent = `${words} words`;
+}
+document.getElementById('words').textContent = `${total} words`;
+
+const buttons = [...document.querySelectorAll('.switch button')];
+for (const button of buttons) {
+  button.addEventListener('click', () => {
+    document.body.dataset.view = button.dataset.view;
+    for (const other of buttons) other.setAttribute('aria-pressed', String(other === button));
+  });
+}
+</script>
+</body>
+</html>
