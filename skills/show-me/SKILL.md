@@ -16,6 +16,7 @@ A card the human can touch beats a paragraph they have to read.
 | A long job | Work board: stages counted from real steps |
 | A system | Tap-through map: the whole thing, with the problem lit up |
 | A place on a screen | Point at it: the human taps the spot |
+| A flow of a few states | Flipbook: a scrubber over real screenshots |
 | Something that happens over time | Motion clip: a few seconds of video |
 
 One sentence is enough? Write the sentence. No card.
@@ -50,6 +51,17 @@ node compare-card.mjs --before before.png --after after.png --title "What change
 ```
 
 Optional: `--before-label`, `--after-label`, `--keep`, `--back`.
+
+## Flip through it
+
+A flipbook is a scrubber over real screenshots: motion over time without a video pipeline. Use it for a flow of three to eight states (open, zoom, close). Capture each state at the same viewport, then:
+
+```bash
+node flipbook-card.mjs --frame "Card in the chat=f1.jpg" --frame "Full screen=f2.jpg" \
+  --title "Full screen, frame by frame" --note "Real screenshots" --fps 1.5 --action "Keep it" --out card.html
+```
+
+It plays once when seen and stops on the last frame; drag the scrubber, tap the stage or press ←/→ to step. Reduced motion opens on the last frame. JPEG frames keep six frames under 500 KiB.
 
 ## Play a clip
 

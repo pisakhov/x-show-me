@@ -177,9 +177,21 @@ iframe { flex: 1; width: 100%; min-height: 0; border: 0; background: var(--base)
     </div>
   </section>
 
+  <section class="step" id="flipbook">
+    <h2><span>7.</span> Flipbook</h2>
+    <p>A few real screenshots under one scrubber. Motion without a video pipeline.</p>
+    <div class="pair">
+      <div class="side chat"><header><b>Chatbot</b><span class="cost"></span></header><div class="talk" tabindex="0" aria-label="Chatbot version">
+        <p>Here is how full screen works now. The diagram sits in the chat as a plain figure with a small icon in its corner. Tapping that icon opens the diagram over the whole screen, with a short toolbar of icons at the top: zoom out, the current zoom level, zoom in, point, open in a new tab and close.</p>
+        <p>Tapping zoom in takes it to 125 percent, then 156 percent. Tapping the zoom level resets it to 100 percent. Tapping close returns you to the chat exactly where you were, with the diagram card still in place.</p>
+      </div></div>
+      <div class="side show"><header><b>Show Me</b><span class="cost">1 look, 1 drag</span></header><iframe title="Flipbook example" src="examples/flipbook.html" sandbox="allow-scripts" loading="lazy"></iframe></div>
+    </div>
+  </section>
+
   <div class="score">
     <div class="bad"><strong id="words"></strong><span>to read as a chatbot</span></div>
-    <div class="good"><strong>6 taps, 1 drag</strong><span>and 3 looks with Show Me</span></div>
+    <div class="good"><strong>6 taps, 2 drags</strong><span>and 4 looks with Show Me</span></div>
   </div>
   <p class="end"><a href="https://github.com/pisakhov/x-show-me">Use Show Me with your agent</a></p>
 </div>
