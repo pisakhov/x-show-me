@@ -164,9 +164,22 @@ iframe { flex: 1; width: 100%; min-height: 0; border: 0; background: var(--base)
     </div>
   </section>
 
+  <section class="step" id="motion-clip">
+    <h2><span>6.</span> Motion clip</h2>
+    <p>If it happens over time, play it.</p>
+    <div class="pair">
+      <div class="side chat"><header><b>Chatbot</b><span class="cost"></span></header><div class="talk" tabindex="0" aria-label="Chatbot version">
+        <p>Here's what was going wrong. When a customer opened checkout on a phone, the page loaded and the Pay button appeared at the bottom of the screen.</p>
+        <p>A moment later, the cookie bar slid up from the bottom edge and landed on top of the Pay button. The customer tapped where Pay had been, but the tap went to the cookie bar, so no order was placed.</p>
+        <p>After the fix, the cookie bar moves up and rests above Pay. Pay stays clear, the tap reaches it, and the order goes through. Would you like me to add this to the release notes?</p>
+      </div></div>
+      <div class="side show"><header><b>Show Me</b><span class="cost">1 look, 1 tap</span></header><iframe title="Motion clip example" src="examples/motion-clip.html" sandbox="allow-scripts" loading="lazy"></iframe></div>
+    </div>
+  </section>
+
   <div class="score">
     <div class="bad"><strong id="words"></strong><span>to read as a chatbot</span></div>
-    <div class="good"><strong>5 taps, 1 drag</strong><span>and 2 looks with Show Me</span></div>
+    <div class="good"><strong>6 taps, 1 drag</strong><span>and 3 looks with Show Me</span></div>
   </div>
   <p class="end"><a href="https://github.com/pisakhov/x-show-me">Use Show Me with your agent</a></p>
 </div>

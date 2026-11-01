@@ -8,6 +8,7 @@ import { card, launch, ROOT, serve } from './lib.mjs';
 
 const OUT = join(ROOT, 'assets');
 const GIF = { width: 1100, height: 440, framesPerSecond: 6, seconds: 15 };
+const CLIP = { framesPerSecond: 10, seconds: 7.8 };
 mkdirSync(OUT, { recursive: true });
 
 const site = await serve();
@@ -24,6 +25,23 @@ const POSE = {
     await frame.locator('#stage').click({ position: { x: 190, y: 60 } });
   },
 };
+
+// Grabs frames in real time, then turns them into a small looping GIF.
+async function record(seconds, name, shoot, framesPerSecond = GIF.framesPerSecond) {
+  const dir = mkdtempSync(join(tmpdir(), 'show-me-gif-'));
+  const started = Date.now();
+  for (let index = 0; index < framesPerSecond * seconds; index += 1) {
+    await shoot(join(dir, `${String(index).padStart(4, '0')}.png`), index);
+    const wait = started + (index + 1) * 1000 / framesPerSecond - Date.now();
+    if (wait > 0) await new Promise(done => setTimeout(done, wait));
+  }
+  const gif = spawnSync('ffmpeg', ['-y', '-loglevel', 'error', '-framerate', String(framesPerSecond), '-i', join(dir, '%04d.png'),
+    '-vf', 'split[a][b];[a]palettegen=max_colors=64:stats_mode=diff[p];[b][p]paletteuse=dither=none:diff_mode=rectangle',
+    '-loop', '0', join(OUT, name)], { encoding: 'utf8' });
+  rmSync(dir, { recursive: true, force: true });
+  if (gif.status !== 0) throw new Error(gif.stderr);
+  console.log(`assets/${name}`);
+}
 
 const stills = await browser.newContext({ viewport: { width: 1180, height: 900 }, deviceScaleFactor: 2 });
 const page = await stills.newPage();
@@ -49,7 +67,6 @@ await hero.addStyleTag({ content: `
   .side { height: ${GIF.height - 16}px; } .talk { font-size: 15px; }` });
 const frame = await card(hero, 'work-board');
 await frame.getByRole('button', { name: 'Replay' }).waitFor();
-const dir = mkdtempSync(join(tmpdir(), 'show-me-gif-'));
 await hero.evaluate(() => {
   const talk = document.querySelector('#work-board .talk');
   const lines = [...talk.querySelectorAll('p')];
@@ -59,20 +76,29 @@ await hero.evaluate(() => {
   next();
 });
 await frame.getByRole('button', { name: 'Replay' }).click();
-const started = Date.now();
-const total = GIF.framesPerSecond * GIF.seconds;
-for (let index = 0; index < total; index += 1) {
-  await hero.screenshot({ path: join(dir, `${String(index).padStart(4, '0')}.png`) });
-  const wait = started + (index + 1) * 1000 / GIF.framesPerSecond - Date.now();
-  if (wait > 0) await hero.waitForTimeout(wait);
-}
+await record(GIF.seconds, 'hero.gif', path => hero.screenshot({ path }));
 await motion.close();
+
+// The clip has to move in the README too, so it gets a GIF of the real gallery.
+const clipContext = await browser.newContext({ viewport: { width: GIF.width, height: 760 } });
+const clipPage = await clipContext.newPage();
+await clipPage.goto(site.url);
+await clipPage.addStyleTag({ content: '#draft { display: none !important; }' });
+const clipFrame = await card(clipPage, 'motion-clip');
+const pair = clipPage.locator('#motion-clip .pair');
+const video = clipFrame.locator('video');
+await video.waitFor();
+// Screenshots are slower than playback, so step to each exact moment instead of filming it.
+await record(CLIP.seconds, 'motion-clip.gif', async (path, index) => {
+  await video.evaluate((clip, time) => new Promise(done => {
+    clip.pause();
+    clip.addEventListener('seeked', done, { once: true });
+    clip.currentTime = time;
+  }), index / CLIP.framesPerSecond);
+  await pair.screenshot({ path });
+}, CLIP.framesPerSecond);
+await clipContext.close();
+
 await browser.close();
 site.close();
-
-const gif = spawnSync('ffmpeg', ['-y', '-loglevel', 'error', '-framerate', String(GIF.framesPerSecond), '-i', join(dir, '%04d.png'),
-  '-vf', 'split[a][b];[a]palettegen=max_colors=64:stats_mode=diff[p];[b][p]paletteuse=dither=none:diff_mode=rectangle',
-  '-loop', '0', join(OUT, 'hero.gif')], { encoding: 'utf8' });
-rmSync(dir, { recursive: true, force: true });
-if (gif.status !== 0) throw new Error(gif.stderr);
-console.log(`assets/hero.gif; chatbot total ${words}`);
+console.log(`chatbot total ${words}`);
