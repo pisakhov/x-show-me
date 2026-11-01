@@ -97,6 +97,8 @@ try {
     await frame.getByText('Done. The Pay button works on phones.').waitFor({ timeout: 15000 });
     assert.deepEqual(await frame.locator('.stage small').allTextContents(), ['5', '3', '2', '2', '1']);
     assert.equal(await frame.locator('#count').textContent(), '13 steps');
+    await frame.getByText('See every step').click();
+    assert.equal(await frame.locator('li[data-failed]').count(), 1);
     await frame.getByRole('button', { name: 'Show the result' }).click();
     await drafted(page, exactly('Show me the result.'));
     await close();
