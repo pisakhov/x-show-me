@@ -98,6 +98,14 @@ This is the whole host. Serve cards from a separate origin if you can.
 </script>
 ```
 
+Let the card sit on your page, not in a box. Give the frame no background and no border, and let the card's own `color-scheme` match your page:
+
+```css
+#card { display: block; width: 100%; border: 0; border-radius: 14px; background: transparent; }
+```
+
+For full screen, one quiet icon in the card's corner opens a viewer that fills the viewport on every device: `position: fixed; inset: 0; overflow: hidden`, an icon-only toolbar (zoom, point, open in a tab, close) so it can never grow wider than a phone screen, and the same frame inside.
+
 Keep `sandbox="allow-scripts"` and don't add `allow-same-origin`. A card is code written by a model, so treat it like code from a stranger.
 
 A motion clip is a normal card with the MP4 inside it, so this host already plays it. If you set a Content Security Policy, allow `media-src data:`.

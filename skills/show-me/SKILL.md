@@ -31,6 +31,7 @@ Write one self-contained HTML file.
 - Use real material: real renders, real data, real steps. Never guess a plan, fake progress, or hide a failure.
 - If something is sample data, say so on the card.
 - Never show secrets, tokens, or private text.
+- It is part of the conversation: `body { background: transparent }`, no outer border, no title bar, and `<meta name="color-scheme" content="dark">` (or light) to match the host. The host adds the full-screen icon; the card never does.
 
 ## Let a tap answer
 
@@ -101,3 +102,4 @@ node show-card.mjs card.html
 2. Is the next action the first thing they see?
 3. Is everything on it real?
 4. Can they get the details if they want them?
+5. Does it sit on the page, or in a box of its own?
