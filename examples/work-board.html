@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Work board</title>
+<style>
+:root { --base: #0c1015; --panel: #151b23; --edge: #303c49; --text: #edf2f7; --soft: #b0bdc9; --muted: #94a3b2; --accent: #a7ddeb; --ok: #93dfb3; --bad: #f87171; }
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body { display: flex; flex-direction: column; gap: 10px; padding: 10px 12px; background: var(--base); color: var(--text); font: 14px/1.4 ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+header { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+h1 { margin: 0; font-size: 15px; font-weight: 600; }
+header span { color: var(--muted); font-size: 12px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+.body { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 12px; width: 100%; max-width: 640px; min-height: 0; margin: 0 auto; }
+#board { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; min-height: 52px; margin: 0; padding: 0; list-style: none; }
+.stage { --stage: var(--edge); padding-top: 8px; border-top: 3px solid var(--stage); transition: border-color .2s; }
+.stage[data-state="done"] { --stage: var(--ok); }
+.stage[data-state="run"] { --stage: var(--accent); animation: pulse 1.2s ease-in-out infinite; }
+.stage[data-state="failed"] { --stage: var(--bad); }
+.stage strong { display: block; font-size: 13px; font-weight: 600; }
+.stage small { color: var(--muted); font: 13px/1.3 ui-monospace, SFMono-Regular, Menlo, monospace; }
+.stage[data-state="failed"] small { color: var(--bad); }
+.stage[data-state="waiting"] strong, .stage[data-state="waiting"] small { opacity: .35; }
+@keyframes pulse { 50% { border-top-color: #a7ddeb52; } }
+#now { display: flex; align-items: center; gap: 8px; min-height: 22px; margin: 0; color: var(--soft); }
+#now::before { content: ''; flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+#now[data-state="failed"]::before { background: var(--bad); }
+#now[data-state="done"]::before { background: var(--ok); }
+#now[data-state="done"] { color: var(--text); font-weight: 600; }
+details { min-height: 0; color: var(--soft); font-size: 13px; }
+summary { display: flex; align-items: center; min-height: 44px; color: var(--muted); cursor: pointer; }
+details ol { max-height: 120px; margin: 0; padding: 0 0 0 22px; overflow: auto; }
+details li[data-failed] { color: var(--bad); }
+footer { display: flex; gap: 8px; }
+button { flex: 1; min-height: 44px; border: 1px solid var(--edge); border-radius: 8px; background: var(--panel); color: var(--text); font: 600 14px ui-sans-serif, system-ui, sans-serif; cursor: pointer; }
+button.primary { border-color: var(--accent); background: var(--accent); color: var(--base); }
+button:disabled { opacity: .45; cursor: default; }
+button:focus-visible, summary:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { .stage[data-state="run"] { animation: none; } .stage { transition: none; } }
+</style>
+</head>
+<body>
+<header><h1>Work board</h1><span id="count">0 steps</span></header>
+<div class="body">
+  <ol id="board" aria-label="Work board"></ol>
+  <p id="now" aria-live="polite"></p>
+  <details><summary>See every step</summary><ol id="steps"></ol></details>
+</div>
+<footer>
+  <button id="replay" type="button">Replay</button>
+  <button id="result" class="primary" type="button" disabled>Show the result</button>
+</footer>
+<script>
+// The board only counts steps that really ran. It never draws a plan.
+// A real agent feeds this from its tool-call events. This demo replays a sample run.
+const STAGES = ['Read', 'Build', 'Test', 'Merge', 'Deploy'];
+const RUN = [
+  ['Read', 'Open checkout.css'],
+  ['Read', 'Open cookie-banner.css'],
+  ['Read', 'Search for z-index'],
+  ['Read', 'Open checkout.test.js'],
+  ['Read', 'Load the page at phone size'],
+  ['Build', 'Edit checkout.css'],
+  ['Build', 'Edit cookie-banner.css'],
+  ['Test', 'Run the phone tests', 'failed'],
+  ['Build', 'Fix the button spacing'],
+  ['Test', 'Run the phone tests'],
+  ['Merge', 'Commit the fix'],
+  ['Merge', 'Merge the pull request'],
+  ['Deploy', 'Deploy to the shop'],
+];
+const STEP_MS = 820;
+const board = document.getElementById('board');
+const now = document.getElementById('now');
+const count = document.getElementById('count');
+const steps = document.getElementById('steps');
+const replay = document.getElementById('replay');
+const result = document.getElementById('result');
+let timer = 0;
+
+function renderBoard(reached) {
+  board.replaceChildren(...STAGES.map(name => {
+    const stage = reached.get(name);
+    const item = document.createElement('li');
+    item.className = 'stage';
+    item.dataset.state = stage?.state || 'waiting';
+    const label = document.createElement('strong');
+    label.textContent = name;
+    const number = document.createElement('small');
+    number.textContent = stage ? String(stage.steps) : '–';
+    item.append(label, number);
+    item.setAttribute('aria-label', `${name}: ${stage ? `${stage.steps} steps, ${stage.state}` : 'not reached'}`);
+    return item;
+  }));
+}
+
+function showUpTo(index, running) {
+  const reached = new Map();
+  for (const [name, , failed] of RUN.slice(0, index + 1)) {
+    const stage = reached.get(name) || { steps: 0 };
+    stage.steps += 1;
+    stage.state = failed || 'done';
+    reached.set(name, stage);
+  }
+  const [name, title, failed] = RUN[index];
+  if (running) reached.get(name).state = failed ? 'failed' : 'run';
+  renderBoard(reached);
+  count.textContent = `${index + 1} step${index ? 's' : ''}`;
+  const finished = !running;
+  now.dataset.state = finished ? 'done' : failed ? 'failed' : 'run';
+  now.textContent = finished ? 'Done. The Pay button works on phones.' : failed ? `${title}: 1 failed. Fixing it.` : `Now: ${title}`;
+  steps.replaceChildren(...RUN.slice(0, index + 1).map(([stage, text, bad]) => {
+    const item = document.createElement('li');
+    item.textContent = `${stage}: ${text}${bad ? ' (failed)' : ''}`;
+    if (bad) item.dataset.failed = '';
+    return item;
+  }));
+  steps.scrollTop = steps.scrollHeight;
+  result.disabled = !finished;
+}
+
+function play() {
+  clearTimeout(timer);
+  result.textContent = 'Show the result';
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return showUpTo(RUN.length - 1, false);
+  let index = 0;
+  const tick = () => {
+    if (index === RUN.length) return showUpTo(RUN.length - 1, false);
+    showUpTo(index, true);
+    index += 1;
+    timer = setTimeout(tick, STEP_MS);
+  };
+  tick();
+}
+
+replay.addEventListener('click', play);
+result.addEventListener('click', () => {
+  parent.postMessage({ type: 'x-card-reply', text: 'Show me the result.' }, '*');
+  result.textContent = 'Added to your draft';
+});
+play();
+</script>
+</body>
+</html>
