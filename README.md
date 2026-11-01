@@ -54,6 +54,8 @@ If it happens over time, play it.
 
 **The whole job:** 774 words to read, or 6 taps, 1 drag and 3 looks.
 
+A seventh shape, **Flipbook**, is a scrubber over real screenshots: motion over time without a video pipeline (`skills/show-me/flipbook-card.mjs`, [example](examples/flipbook.html)).
+
 *Sample data. Fern Coffee is made up, and both sides were written for this demo.*
 
 ## The 6 principles
