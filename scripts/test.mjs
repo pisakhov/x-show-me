@@ -8,6 +8,7 @@ import { card, EXAMPLES, launch, ROOT, serve } from './lib.mjs';
 
 const VERIFY = join(ROOT, 'skills/show-me/verify-card.mjs');
 const SHOW = join(ROOT, 'skills/show-me/show-card.mjs');
+const VIDEO = join(ROOT, 'skills/show-me/video-card.mjs');
 const results = [];
 const test = async (name, run) => { await run(); results.push(name); console.log(`ok - ${name}`); };
 const verify = path => spawnSync('node', [VERIFY, path, '--shots', mkdtempSync(join(tmpdir(), 'show-me-'))], { encoding: 'utf8' });
@@ -128,6 +129,52 @@ try {
     await frame.getByRole('button', { name: 'Ship it' }).click();
     await drafted(page, exactly('Ship it.'));
     await close();
+  });
+
+  await test('motion clip: it plays once when seen, stops on the outcome, and replays', async () => {
+    const { page, errors, outside, close } = await open();
+    const frame = await card(page, 'motion-clip');
+    const clip = frame.locator('video');
+    await clip.waitFor();
+    await clip.evaluate(video => new Promise(done => { const check = () => video.currentTime > 0 ? done() : setTimeout(check, 50); check(); }));
+    await clip.evaluate(video => new Promise(done => { video.addEventListener('ended', done, { once: true }); video.currentTime = video.duration - .2; }));
+    assert.deepEqual(await clip.evaluate(video => [video.paused, video.ended, video.loop]), [true, true, false]);
+    await frame.getByRole('button', { name: 'Replay' }).click();
+    assert.deepEqual(await clip.evaluate(video => [video.paused, video.currentTime < 2]), [false, true]);
+    await frame.getByRole('button', { name: 'Add to the release notes' }).click();
+    await drafted(page, exactly('Add to the release notes'));
+    assert.deepEqual([errors, outside], [[], []]);
+    await close();
+  });
+
+  await test('motion clip: reduced motion shows the outcome and waits for Replay', async () => {
+    const { page, close } = await open({ reducedMotion: 'reduce' });
+    const frame = await card(page, 'motion-clip');
+    const clip = frame.locator('video');
+    await clip.waitFor();
+    await clip.evaluate(video => new Promise(done => { const check = () => video.duration && video.currentTime === video.duration ? done() : setTimeout(check, 50); check(); }));
+    await frame.getByRole('button', { name: 'Replay' }).click();
+    assert.equal(await clip.evaluate(video => video.paused), false);
+    await close();
+  });
+
+  await test('the verifier rejects a video that does not play', () => {
+    const path = join(mkdtempSync(join(tmpdir(), 'show-me-')), 'stuck.html');
+    writeFileSync(path, '<!doctype html><title>Stuck</title><video src="data:video/mp4;base64,AAAA" muted></video>');
+    const run = verify(path);
+    assert.equal(run.status, 1);
+    assert.match(run.stderr, /video does not play/);
+  });
+
+  await test('video-card refuses a file that is not an MP4 and a clip over the card limit', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'show-me-'));
+    const make = video => spawnSync('node', [VIDEO, '--video', video, '--title', 'Clip', '--note', 'Sample', '--alt', 'Clip', '--out', join(dir, 'card.html')], { encoding: 'utf8' });
+    writeFileSync(join(dir, 'fake.mp4'), 'not a video');
+    assert.match(make(join(dir, 'fake.mp4')).stderr, /not an MP4/);
+    const large = Buffer.alloc(3.2 * 1024 * 1024);
+    large.write('ftyp', 4, 'latin1');
+    writeFileSync(join(dir, 'large.mp4'), large);
+    assert.match(make(join(dir, 'large.mp4')).stderr, /the limit is 4 MiB/);
   });
 
   await test('a card cannot talk to the page unless it is one of the frames', async () => {

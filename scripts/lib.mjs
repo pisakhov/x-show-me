@@ -6,12 +6,13 @@ import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
 
 export const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
-export const EXAMPLES = ['point-at-it', 'tap-through-map', 'tap-to-decide', 'work-board', 'drag-to-compare'];
+export const EXAMPLES = ['point-at-it', 'tap-through-map', 'tap-to-decide', 'work-board', 'drag-to-compare', 'motion-clip'];
 const TYPES = { '.html': 'text/html; charset=utf-8', '.png': 'image/png', '.gif': 'image/gif' };
 
 export function launch() {
   const options = { headless: true, args: process.getuid?.() === 0 ? ['--no-sandbox', '--disable-dev-shm-usage'] : [] };
-  return chromium.launch(options).catch(() => chromium.launch({ ...options, channel: 'chrome' }));
+  // Real Chrome comes first because Playwright's own Chromium can't play H.264 video.
+  return chromium.launch({ ...options, channel: 'chrome' }).catch(() => chromium.launch(options));
 }
 
 export function serve() {

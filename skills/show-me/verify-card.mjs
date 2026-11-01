@@ -2,6 +2,7 @@
 // Load a card under a strict sandbox and CSP at the three frame sizes.
 // Usage: verify-card.mjs card.html [--shots dir]
 // Needs Playwright: npm i -D playwright && npx playwright install chromium
+// Video cards also need real Chrome: npx playwright install chrome
 import { mkdirSync, readFileSync, statSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { basename, join, resolve } from 'node:path';
@@ -23,7 +24,8 @@ if (statSync(card).size > MAX_CARD_BYTES) problems.push('larger than 4 MiB');
 
 // Chromium refuses its own sandbox when it runs as root, which is common in containers.
 const launch = { headless: true, args: process.getuid?.() === 0 ? ['--no-sandbox', '--disable-dev-shm-usage'] : [] };
-const browser = await chromium.launch(launch).catch(() => chromium.launch({ ...launch, channel: 'chrome' }));
+// Real Chrome comes first because Playwright's own Chromium can't play H.264 video.
+const browser = await chromium.launch({ ...launch, channel: 'chrome' }).catch(() => chromium.launch(launch));
 try {
   for (const [width, height] of SIZES) {
     const page = await browser.newPage({ viewport: { width, height } });
@@ -33,6 +35,12 @@ try {
     await page.route('https://card.test/', route => route.fulfill({ contentType: 'text/html', headers: { 'Content-Security-Policy': CSP }, body: html }));
     await page.goto('https://card.test/', { waitUntil: 'load' });
     await page.waitForTimeout(400);
+    const stuck = await page.evaluate(() => Promise.all([...document.querySelectorAll('video')].map(async video => {
+      await video.play().catch(() => {});
+      const start = video.currentTime;
+      await new Promise(done => setTimeout(done, 600));
+      return Boolean(video.error) || video.currentTime === start;
+    })));
     const state = await page.evaluate(minTarget => ({
       overflow: document.documentElement.scrollWidth > innerWidth,
       tall: [...document.body.children].filter(item => !['SCRIPT', 'STYLE'].includes(item.tagName))
@@ -46,6 +54,7 @@ try {
     if (state.overflow) note('sideways overflow');
     if (state.tall.length) note(`taller than the frame: ${state.tall.join(', ')}`);
     if (state.broken) note(`${state.broken} broken image(s)`);
+    if (stuck.some(Boolean)) note('a video does not play; video cards need real Chrome and an H.264 MP4');
     if (state.small.length) note(`targets under ${MIN_TARGET}px: ${state.small.join(', ')}`);
     await page.screenshot({ path: `${shots}/${width}x${height}.png` });
     await page.close();

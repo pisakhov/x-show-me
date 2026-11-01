@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1280, height=720" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+    <style>
+      :root { --ground: #0c1015; --ink: #edf2f7; --soft: #b0bdc9; --accent: #a7ddeb; --ok: #93dfb3; --bad: #f87171; --paper: #faf8f3; --paper-ink: #1c2430; --line: #e4dfd5; }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1280px; height: 720px; overflow: hidden; background: var(--ground); }
+      #root { position: relative; width: 1280px; height: 720px; color: var(--ink); font-family: ui-sans-serif, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; background: var(--ground); }
+      #phone { position: absolute; left: 170px; top: 50px; width: 320px; height: 620px; border: 10px solid #2a3440; border-radius: 42px; background: var(--paper); color: var(--paper-ink); overflow: hidden; }
+      .head { height: 72px; padding: 24px 22px 0; font-size: 20px; font-weight: 700; color: #4b5563; border-bottom: 2px solid var(--line); }
+      .row { display: flex; justify-content: space-between; padding: 26px 22px; font-size: 22px; border-bottom: 2px solid var(--line); }
+      .row.total { font-weight: 700; }
+      #pay { position: absolute; left: 18px; right: 18px; bottom: 22px; height: 72px; display: flex; align-items: center; justify-content: center; border-radius: 16px; background: #2f6f4f; color: #fff; font-size: 24px; font-weight: 700; }
+      #paid { position: absolute; left: 18px; right: 18px; bottom: 22px; height: 72px; display: flex; align-items: center; justify-content: center; border-radius: 16px; background: #1f9d62; color: #fff; font-size: 24px; font-weight: 700; opacity: 0; }
+      #cookie { position: absolute; left: 0; right: 0; bottom: 0; height: 112px; display: flex; align-items: center; justify-content: space-between; padding: 0 22px; background: #3d4552; color: #fff; font-size: 21px; }
+      #cookie b { font-weight: 700; }
+      #edge { position: absolute; inset: 0; border: 4px solid var(--bad); opacity: 0; }
+      #finger { position: absolute; left: 124px; top: 516px; opacity: 0; width: 52px; height: 52px; border: 3px solid #fff; border-radius: 50%; background: rgba(28, 36, 48, .42); }
+      #ripple { position: absolute; left: 150px; top: 542px; width: 12px; height: 12px; margin: -6px; border: 4px solid #fff; border-radius: 50%; opacity: 0; }
+      .side { position: absolute; left: 570px; top: 0; width: 620px; height: 720px; }
+      .pill { position: absolute; left: 0; top: 196px; padding: 8px 20px; border-radius: 999px; font-size: 28px; font-weight: 700; opacity: 0; }
+      #pill-before { background: rgba(248, 113, 113, .16); color: var(--bad); }
+      #pill-after { background: rgba(147, 223, 179, .16); color: var(--ok); }
+      .say { position: absolute; left: 0; top: 268px; width: 620px; font-size: 68px; line-height: 1.08; font-weight: 700; letter-spacing: -1px; opacity: 0; }
+      #say-stuck { color: var(--bad); }
+      #say-paid { color: var(--ok); }
+      #note { position: absolute; right: 44px; bottom: 28px; color: #94a3b2; font-size: 26px; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="7.8" data-width="1280" data-height="720">
+      <div id="phone" class="clip" data-start="0" data-duration="7.8" data-track-index="0">
+        <div class="head">Fern Coffee</div>
+        <div class="row"><span>Morning Blend × 2</span></div>
+        <div class="row total"><span>Total</span><span>$28.00</span></div>
+        <div id="pay"><span id="pay-label">Pay $28.00</span></div>
+        <div id="paid">Paid ✓</div>
+        <div id="cookie"><span>We use cookies</span><b>OK</b></div>
+        <div id="edge"></div>
+        <div id="ripple"></div>
+        <div id="finger"></div>
+      </div>
+      <div id="copy" class="side clip" data-start="0" data-duration="7.8" data-track-index="1">
+        <div id="pill-before" class="pill">Before</div>
+        <div id="pill-after" class="pill">After</div>
+        <div id="say-tap" class="say">Tap Pay</div>
+        <div id="say-block" class="say">The cookie bar blocks it</div>
+        <div id="say-stuck" class="say">No order</div>
+        <div id="say-fix" class="say">The bar moves up</div>
+        <div id="say-paid" class="say">Paid</div>
+      </div>
+      <div id="note" class="clip" data-start="0" data-duration="7.8" data-track-index="2">Reenactment · sample data</div>
+    </div>
+    <script>
+      const tl = gsap.timeline({ paused: true });
+      const say = (id, at, out) => {
+        tl.fromTo(id, { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: .24, ease: 'power2.out' }, at);
+        if (out) tl.to(id, { opacity: 0, y: -14, duration: .16, ease: 'power1.in' }, out);
+      };
+      const reach = at => tl.to('#finger', { y: 0, opacity: 1, duration: .4, ease: 'power2.inOut' }, at);
+      const leave = at => tl.to('#finger', { y: 30, opacity: 0, duration: .3, ease: 'power2.in' }, at);
+      const tap = at => {
+        tl.to('#finger', { scale: .78, duration: .08 }, at).to('#finger', { scale: 1, duration: .14 }, at + .1);
+        tl.set('#ripple', { opacity: 1, scale: 1 }, at);
+        tl.to('#ripple', { opacity: 0, scale: 9, duration: .42, ease: 'power2.out' }, at);
+      };
+      tl.set('#cookie', { y: 112 }, 0);
+      tl.set('#finger', { y: 30 }, 0);
+      tl.fromTo('#phone', { opacity: 0, y: 26 }, { opacity: 1, y: 0, duration: .32, ease: 'power2.out' }, 0);
+      tl.fromTo('#pill-before', { opacity: 0 }, { opacity: 1, duration: .2 }, .1);
+
+      // Before: the bar slides over Pay, and it takes the tap.
+      say('#say-tap', .1, 1.25);
+      tl.set('#pay-label', { opacity: 0 }, .8);
+      tl.to('#cookie', { y: 0, duration: .34, ease: 'power3.out' }, .8);
+      reach(1.05);
+      say('#say-block', 1.4, 3);
+      tap(1.6);
+      tl.to('#edge', { opacity: 1, duration: .1 }, 1.65);
+      tl.to('#cookie', { x: -7, duration: .05, yoyo: true, repeat: 3 }, 1.65).set('#cookie', { x: 0 }, 1.87);
+      leave(2.2);
+      say('#say-stuck', 3.15, 4.05);
+      tl.to('#edge', { opacity: 0, duration: .2 }, 4).to('#pill-before', { opacity: 0, duration: .16 }, 4);
+
+      // After: the bar moves up, Pay is clear, and the tap lands.
+      tl.fromTo('#pill-after', { opacity: 0 }, { opacity: 1, duration: .2 }, 4.2);
+      say('#say-fix', 4.2, 5.6);
+      tl.to('#cookie', { y: -104, duration: .46, ease: 'power3.inOut' }, 4.2);
+      tl.set('#pay-label', { opacity: 1 }, 4.45);
+      reach(4.7);
+      tap(5.15);
+      tl.set('#pay-label', { opacity: 0 }, 5.23).set('#paid', { opacity: 1 }, 5.23);
+      say('#say-paid', 5.75);
+      leave(5.55);
+      tl.to({}, { duration: .01 }, 7.79);
+      window.__timelines['main'] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>
