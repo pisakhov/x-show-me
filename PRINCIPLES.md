@@ -13,6 +13,7 @@ If the answer has a shape, show the shape.
 | A long job | A line of narration per step | A board that counts real steps |
 | A system | Paragraphs about each part | A map with the problem lit up |
 | A place | "Describe where it is" | The human taps the spot |
+| Something over time | A play-by-play | A few seconds of video |
 
 **Not everything needs a card.** "Yes", a date or a one-line fix should stay one line.
 
@@ -40,6 +41,7 @@ A pretty lie is worse than a wall of text.
 - Count what happened. Never draw a guessed plan or a fake percent.
 - A failed step stays in the record, even after it's fixed.
 - Sample data says it's sample data.
+- An animation proves nothing. Unless it's a real recording, it says it's a reenactment.
 
 ## 5. Details on demand
 
@@ -47,6 +49,7 @@ Start with the least. Keep the rest one tap away.
 
 - "See every step" is there, and closed by default.
 - The words still exist for anyone who wants them.
+- A clip plays once and stops on the outcome. Replay is one tap.
 - Everyone gets in: touch, keyboard, screen reader labels and reduced motion.
 
 ## Before you send

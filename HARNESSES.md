@@ -100,6 +100,8 @@ This is the whole host. Serve cards from a separate origin if you can.
 
 Keep `sandbox="allow-scripts"` and don't add `allow-same-origin`. A card is code written by a model, so treat it like code from a stranger.
 
+A motion clip is a normal card with the MP4 inside it, so this host already plays it. If you set a Content Security Policy, allow `media-src data:`.
+
 ## MCP Apps
 
 [MCP Apps](https://github.com/modelcontextprotocol/ext-apps) bring cards to any host that supports the standard. A tool links to a `ui://` resource with the type `text/html;profile=mcp-app`, and the host renders it in a sandboxed frame.

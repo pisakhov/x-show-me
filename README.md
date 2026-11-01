@@ -46,7 +46,13 @@ Don't read about the change. Drag across it.
 
 ![Chatbot summarizes the fix in 126 words. Show Me puts before and after under one slider.](assets/drag-to-compare.png)
 
-**The whole job:** 672 words to read, or 5 taps, 1 drag and 2 looks.
+### 6. Motion clip
+
+If it happens over time, play it.
+
+![Chatbot walks through the bug in 102 words. Show Me plays it in 8 seconds.](assets/motion-clip.gif)
+
+**The whole job:** 774 words to read, or 6 taps, 1 drag and 3 looks.
 
 *Sample data. Fern Coffee is made up, and both sides were written for this demo.*
 
@@ -95,4 +101,4 @@ Tap an option and press Send. Your answer prints in the terminal. That's how an 
 
 ---
 
-MIT. Part of X Agent. ADHD ideas come from [`i-have-adhd`](https://github.com/ayghri/i-have-adhd).
+MIT. Part of X Agent. ADHD ideas come from [`i-have-adhd`](https://github.com/ayghri/i-have-adhd). Motion clips render with [HyperFrames](https://github.com/heygen-com/hyperframes) (Apache-2.0).

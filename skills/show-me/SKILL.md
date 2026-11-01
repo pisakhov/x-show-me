@@ -1,6 +1,6 @@
 ---
 name: show-me
-description: 'Show instead of tell. Use when the answer has a shape: a choice, a comparison, a long job, a system, or a place on a screen. Build a small interactive HTML card instead of writing paragraphs.'
+description: 'Show instead of tell. Use when the answer has a shape: a choice, a comparison, a long job, a system, a place on a screen, or something that happens over time. Build a small interactive HTML card or a few seconds of video instead of writing paragraphs.'
 ---
 
 # Show Me
@@ -16,6 +16,7 @@ A card the human can touch beats a paragraph they have to read.
 | A long job | Work board: stages counted from real steps |
 | A system | Tap-through map: the whole thing, with the problem lit up |
 | A place on a screen | Point at it: the human taps the spot |
+| Something that happens over time | Motion clip: a few seconds of video |
 
 One sentence is enough? Write the sentence. No card.
 
@@ -49,15 +50,40 @@ node compare-card.mjs --before before.png --after after.png --title "What change
 
 Optional: `--before-label`, `--after-label`, `--keep`, `--back`.
 
+## Play a clip
+
+Use a clip only when the point is the movement: a bug that unfolds, a flow, a transition. Keep it under 10 seconds. A still image or a slider is better when nothing needs to move.
+
+A model doesn't output video. You write the clip as HTML, and a renderer turns it into an MP4. These steps use [HyperFrames](https://github.com/heygen-com/hyperframes), which needs Node 22 or newer and FFmpeg.
+
+Copy `clip-template.html` to `clip/index.html` in this folder and rewrite its words and timeline for your story. Then run this in `clip/`:
+
+```bash
+export HYPERFRAMES_NO_TELEMETRY=1
+npx hyperframes check
+npx hyperframes snapshot --at 1,3,5
+npx hyperframes render . -o clip.mp4
+node ../video-card.mjs --video clip.mp4 --title "Why Pay failed" --note "Reenactment" \
+  --alt "What happens in the clip" --action "Add to the release notes" --out card.html
+```
+
+- `check` must pass. Read the frames from `snapshot` before you render.
+- An animation proves nothing. `--note` says what it is: "Reenactment" unless it's a real recording.
+- `--alt` tells the whole story in words for anyone who can't watch it.
+- The card plays once when it's seen and stops on the outcome. Never loop. With reduced motion it opens on the outcome and waits for Replay.
+- A real recording skips the first steps. Any H.264 MP4 works with `video-card.mjs`.
+- Don't run `hyperframes publish`. It uploads the clip.
+- Over 4 MiB? Shorten the clip or render with a higher `--crf`.
+
 ## Check it
 
 ```bash
 node verify-card.mjs card.html
 ```
 
-This fails on errors, overflow, a card taller than its frame, broken images, small targets or a card over 4 MiB. Read the screenshots it writes and fix anything ugly.
+This fails on errors, overflow, a card taller than its frame, broken images, a video that won't play, small targets or a card over 4 MiB. Read the screenshots it writes and fix anything ugly.
 
-The first time, run `npm install playwright` in this folder. If Chrome isn't installed, also run `npx playwright install chromium`.
+The first time, run `npm install playwright` in this folder. If Chrome isn't installed, also run `npx playwright install chromium`. Video cards need real Chrome: `npx playwright install chrome`.
 
 ## Show it
 
