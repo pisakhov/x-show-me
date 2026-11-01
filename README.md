@@ -56,13 +56,14 @@ If it happens over time, play it.
 
 *Sample data. Fern Coffee is made up, and both sides were written for this demo.*
 
-## The 5 principles
+## The 6 principles
 
 1. **Shape over sentences.** If the answer has a shape, show the shape.
 2. **Next action first.** The one thing to do now is the biggest thing on screen.
 3. **One tap, not one paragraph.** A tap fills your draft. You press send.
 4. **Real or nothing.** Real renders, real data, real steps. No fake progress.
 5. **Details on demand.** Start with the least. Keep the rest one tap away.
+6. **Part of the conversation.** No background, no border, no title bar of its own. The card sits in the chat like a figure; one quiet corner icon opens it full screen, and full screen fills whatever screen you are on.
 
 One sentence is enough? Then write one sentence. Not everything needs a card.
 

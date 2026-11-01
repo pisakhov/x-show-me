@@ -1,4 +1,4 @@
-# The 5 principles
+# The 6 principles
 
 [Back to the README](README.md)
 
@@ -52,12 +52,28 @@ Start with the least. Keep the rest one tap away.
 - A clip plays once and stops on the outcome. Replay is one tap.
 - Everyone gets in: touch, keyboard, screen reader labels and reduced motion.
 
+## 6. Part of the conversation
+
+The card belongs to the chat it sits in. It should never feel like a window someone pasted on top.
+
+- **No background of its own.** The card's body is transparent, so the host's page shows through. A darker or lighter box around a card is the first thing that says "this is not from here".
+- **No border, no title bar.** No "DIAGRAM · name · FULL SCREEN" strip above it, no 1px frame around it. The card is a figure in the text, with the page's own corner radius.
+- **One quiet icon for full screen.** A single ↗ in the corner, half-faded until you hover or focus. No words. It still has a label for screen readers.
+- **Full screen means the whole screen.** Phone or desktop, the viewer fills the viewport. Its toolbar is icons only, so it can never be wider than the screen and push the close button out of reach.
+- **Say your colour scheme.** A card declares `color-scheme: dark` (or light) to match its host. Browsers paint an opaque canvas behind a frame whose scheme differs from the page, and that opaque box is exactly the detached look this principle is against.
+
+| Detached | Part of the conversation |
+|---|---|
+| A darker panel with a header strip and a FULL SCREEN button | The same pixels, flat on the page, one ↗ in the corner |
+| Full screen that is a wide dialog you scroll sideways on a phone | Full screen that is the phone screen |
+
 ## Before you send
 
 1. Could this be a look or a tap instead of a paragraph?
 2. Is the next action the first thing they see?
 3. Is everything on it real?
 4. Can they get the details if they want them?
+5. Does it sit on the page, or in a box of its own?
 
 ## Why this helps ADHD brains
 

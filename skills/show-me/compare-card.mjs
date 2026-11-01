@@ -30,18 +30,19 @@ export function compareCard({ before, after, title, beforeLabel, afterLabel, kee
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
 <title>${escapeHtml(title)}</title>
 <style>
-:root { --x: 50%; --accent: #a8dcee; --text: #eef2f7; --muted: #9aa7b6; --edge: #33404f; --panel: #1c232d; --base: #12171e; }
+:root { color-scheme: dark; --x: 50%; --accent: #a8dcee; --text: #eef2f7; --muted: #9aa7b6; --edge: #33404f; --panel: #1c232d; --base: #12171e; }
 * { box-sizing: border-box; }
 html, body { height: 100%; margin: 0; }
-body { display: grid; grid-template-rows: auto minmax(0, 1fr) auto; gap: 8px; padding: 10px; background: var(--base); color: var(--text); font: 14px/1.35 system-ui, sans-serif; overflow: hidden; }
-header { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; min-width: 0; }
+body { display: grid; grid-template-rows: auto minmax(0, 1fr) auto; gap: 8px; padding: 10px; background: transparent; color: var(--text); font: 14px/1.35 system-ui, sans-serif; overflow: hidden; }
+header { display: flex; align-items: baseline; min-width: 0; min-height: 28px; padding-right: 48px; }
 h1 { overflow: hidden; margin: 0; font-size: 14px; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
 header span { flex: none; color: var(--muted); font-size: 12px; }
-.stage { position: relative; min-height: 0; overflow: hidden; border: 1px solid var(--edge); border-radius: 8px; background: var(--panel); cursor: ew-resize; touch-action: none; user-select: none; -webkit-user-select: none; }
+.stage { position: relative; min-height: 0; overflow: hidden; border-radius: 10px; background: transparent; cursor: ew-resize; touch-action: none; user-select: none; -webkit-user-select: none; }
 .stage img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; }
-.after { position: absolute; inset: 0; background: var(--panel); clip-path: inset(0 0 0 var(--x)); }
+.after { position: absolute; inset: 0; background: transparent; clip-path: inset(0 0 0 var(--x)); }
 .line { position: absolute; top: 0; bottom: 0; left: var(--x); width: 2px; margin-left: -1px; background: var(--accent); pointer-events: none; }
 .line::after { content: ''; position: absolute; bottom: 8px; left: 50%; width: 36px; height: 24px; margin-left: -18px; border: 2px solid var(--accent); border-radius: 12px; background: var(--base) linear-gradient(90deg, transparent 47%, var(--accent) 47% 53%, transparent 53%); }
 .stage:has(input:focus-visible) .line::after { outline: 2px solid var(--text); outline-offset: 2px; }
@@ -56,7 +57,7 @@ button:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
 </style>
 </head>
 <body>
-<header><h1>${escapeHtml(title)}</h1><span>Drag to compare</span></header>
+<header><h1>${escapeHtml(title)}</h1></header>
 <div class="stage" id="stage">
   <img src="${before}" alt="${escapeHtml(beforeLabel)}">
   <div class="after"><img src="${after}" alt="${escapeHtml(afterLabel)}"></div>
@@ -75,9 +76,9 @@ const range = document.getElementById('range');
 const show = value => { range.value = value; document.documentElement.style.setProperty('--x', value + '%'); };
 const follow = event => { const box = stage.getBoundingClientRect(); show(Math.round(Math.min(100, Math.max(0, (event.clientX - box.left) / box.width * 100)))); };
 range.addEventListener('input', () => show(range.value));
-stage.addEventListener('pointerdown', event => { stage.setPointerCapture(event.pointerId); follow(event); range.focus({ preventScroll: true }); });
 // Without this the browser moves focus away right after pointerdown and the arrow keys stop working.
 stage.addEventListener('mousedown', event => event.preventDefault());
+stage.addEventListener('pointerdown', event => { stage.setPointerCapture(event.pointerId); follow(event); range.focus({ preventScroll: true }); });
 stage.addEventListener('pointermove', event => { if (stage.hasPointerCapture(event.pointerId)) follow(event); });
 const reply = text => parent.postMessage({ type: 'x-card-reply', text }, '*');
 for (const button of document.querySelectorAll('footer button')) button.addEventListener('click', () => reply(button.textContent));
